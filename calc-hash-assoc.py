@@ -26,7 +26,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('presence_pickle')
     p.add_argument('-o', '--output', required=True)
-    p.add_argument('--scaled', type=int, default=100000)
+    p.add_argument('--scaled', type=int, default=None)
     p.add_argument('--min-presence', type=int, default=5)
     args = p.parse_args()
 
@@ -34,6 +34,8 @@ def main():
         saved_info = pickle.load(fp)
 
     ksize, scaled, classify_d, hash_to_sample = saved_info
+    if args.scaled is None:
+        args.scaled = scaled
 
     print(f"loaded {len(hash_to_sample)} hash to sample entries.")
 
