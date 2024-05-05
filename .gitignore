@@ -1,0 +1,7 @@
+.snakemake
+*~
+*.zip
+*.png
+*.pdf
+*.csv
+*.txt
