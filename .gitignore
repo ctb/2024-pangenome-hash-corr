@@ -5,3 +5,5 @@
 *.pdf
 *.csv
 *.txt
+*.cmp
+*.dump

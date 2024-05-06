@@ -28,6 +28,7 @@ def main():
     p.add_argument('-o', '--output', required=True)
     p.add_argument('--scaled', type=int, default=None)
     p.add_argument('--min-presence', type=int, default=5)
+    p.add_argument('--pangenome-types', type=str, default=None)
     args = p.parse_args()
 
     with open(args.presence_pickle, 'rb') as fp:
@@ -66,9 +67,25 @@ def main():
         if len(presence) >= args.min_presence:
             new_d[hashval] = presence
 
+    hash_to_sample = new_d
     print(f"After presence-filtering to >= {args.min_presence}, {len(new_d)} left.")
 
-    hash_to_sample = new_d
+    # filter for pangenome_types
+    if args.pangenome_types:
+        typelist = list(map(int, list(args.pangenome_types)))
+        print(typelist)
+        assert min(typelist) >= 1
+        assert max(typelist) <= 5
+
+        new_d = {}
+        for hashval, presence in hash_to_sample.items():
+            if classify_d.get(hashval) in typelist:
+                new_d[hashval] = presence
+
+        print(f"After pangenome-hash-type filtering to {typelist}, {len(new_d)} left.")
+
+        hash_to_sample = new_d
+
     hashes = list(sorted(hash_to_sample))
 
     pa = numpy.zeros((len(hashes), len(hashes)), dtype=float)
