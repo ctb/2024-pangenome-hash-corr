@@ -1,0 +1,34 @@
+SCALED=1000
+
+rule assoc:
+    input:
+        "agatha-genomes.10k.cmp.matrix.png",
+        "agatha-genomes.10k.cmp.matrix.pdf",
+
+rule calc_genome_presence:
+    input:
+        pangenome_csv = "pangenome.agathobacter_faecis.csv",
+        db = "gtdb-rs214-agatha-k21.zip"
+    output: "agatha-genomes.10k.dump"
+    shell: """
+        ./calc-hash-presence.py {input.pangenome_csv} {input.db} -o {output} --scaled={SCALED}
+    """
+
+rule make_assoc_matrix_genomes:
+    input:
+        "agatha-genomes.10k.dump",
+    output:
+        "agatha-genomes.10k.cmp",
+    shell: """
+        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 # --pangenome 3
+    """
+
+rule make_png_plot:
+    input: "{cmp}"
+    output: "{cmp}.matrix.png"
+    shell: "sourmash plot {input}"
+
+rule make_pdf_plot:
+    input: "{cmp}"
+    output: "{cmp}.matrix.pdf"
+    shell: "sourmash plot {input} --pdf"
