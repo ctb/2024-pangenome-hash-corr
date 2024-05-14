@@ -1,0 +1,65 @@
+SCALED=1000
+
+rule assoc:
+    input:
+        "agatha-genomes.10k.all.cmp.matrix.png",
+        "agatha-genomes.10k.all.cmp.matrix.pdf",
+        expand("agatha-genomes.10k.{p}.cmp.matrix.png",
+               p=('shell', 'cloud', 'core')),
+        expand("agatha-genomes.10k.{p}.cmp.matrix.pdf",
+               p=('shell', 'cloud', 'core'))
+
+rule calc_genome_presence:
+    input:
+        pangenome_csv = "pangenome.agathobacter_faecis.csv",
+        db = "gtdb-rs214-agatha-k21.zip"
+    output: "agatha-genomes.10k.dump"
+    shell: """
+        ./calc-hash-presence.py {input.pangenome_csv} {input.db} -o {output} --scaled={SCALED}
+    """
+
+rule make_assoc_matrix_genomes_all:
+    input:
+        "agatha-genomes.10k.dump",
+    output:
+        "agatha-genomes.10k.all.cmp",
+    shell: """
+        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2
+    """
+
+rule make_assoc_matrix_genomes_core:
+    input:
+        "agatha-genomes.10k.dump",
+    output:
+        "agatha-genomes.10k.core.cmp",
+    shell: """
+        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 12
+    """
+
+rule make_assoc_matrix_genomes_shell:
+    input:
+        "agatha-genomes.10k.dump",
+    output:
+        "agatha-genomes.10k.shell.cmp",
+    shell: """
+        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 3
+    """
+
+rule make_assoc_matrix_genomes_cloud:
+    input:
+        "agatha-genomes.10k.dump",
+    output:
+        "agatha-genomes.10k.cloud.cmp",
+    shell: """
+        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 45
+    """
+
+rule make_png_plot:
+    input: "{cmp}"
+    output: "{cmp}.matrix.png"
+    shell: "sourmash plot {input}"
+
+rule make_pdf_plot:
+    input: "{cmp}"
+    output: "{cmp}.matrix.pdf"
+    shell: "sourmash plot {input} --pdf"
