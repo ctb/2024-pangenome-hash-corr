@@ -49,9 +49,11 @@ rule make_assoc_matrix_genomes_cloud:
     input:
         "agatha-genomes.10k.dump",
     output:
-        "agatha-genomes.10k.cloud.cmp",
+        cmp="agatha-genomes.10k.cloud.cmp",
+        csv="agatha-genomes.10k.cloud.cmp.csv",
+        cat_csv="agatha-genomes.10k.cloud.cmp.categories.csv",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 45
+        ./calc-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12345 --categories {output.cat_csv} --compare-csv {output.csv}
     """
 
 rule make_png_plot:

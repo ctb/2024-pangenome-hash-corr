@@ -2,6 +2,7 @@
 import sys
 import argparse
 import sourmash
+from sourmash import sourmash_args
 import csv
 from collections import defaultdict
 import numpy
@@ -29,6 +30,9 @@ def main():
     p.add_argument('--scaled', type=int, default=None)
     p.add_argument('--min-presence', type=int, default=5)
     p.add_argument('--pangenome-types', type=str, default=None)
+    p.add_argument('--compare-csv', help="write compare CSV", default=None)
+    p.add_argument('--categories-csv', help="write categories CSV",
+                   default=None)
     args = p.parse_args()
 
     with open(args.presence_pickle, 'rb') as fp:
@@ -109,6 +113,26 @@ def main():
     with open(args.output + '.labels.txt', 'wt') as fp:
         hashstr = [ NAMES[classify_d[x]] for x in hashes ]
         fp.write("\n".join(hashstr))
+
+    if args.compare_csv:
+        with sourmash_args.FileOutputCSV(args.compare_csv) as csv_fp:
+            w = csv.writer(csv_fp)
+            # hashes as column headers
+            w.writerow([ "h"+str(h) for h in hashes ])
+
+            for i in range(len(hashes)):
+                y = []
+                for j in range(len(hashes)):
+                    y.append(str(pa[i][j]))
+                w.writerow(y)
+
+    if args.categories_csv:
+        with sourmash_args.FileOutputCSV(args.categories_csv) as csv_fp:
+            w = csv.writer(csv_fp)
+
+            w.writerow(["labels", "attr"])
+            for hashval in hashes:
+                w.writerow(["h"+str(hashval), NAMES[classify_d[hashval]]])
 
 
 if __name__ == '__main__':
