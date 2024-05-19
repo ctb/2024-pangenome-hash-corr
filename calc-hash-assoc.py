@@ -113,12 +113,17 @@ def main():
     with open(args.output + '.labels.txt', 'wt') as fp:
         hashstr = [ NAMES[classify_d[x]] for x in hashes ]
         fp.write("\n".join(hashstr))
+    with open(args.output + '.labels.csv', 'w', newline='') as fp:
+        w = csv.writer(fp)
+        w.writerow(['sort_order', 'label', 'category'])
+        for n, x in enumerate(hashes):
+            w.writerow([n, x, NAMES[classify_d[x]]])
 
     if args.compare_csv:
         with sourmash_args.FileOutputCSV(args.compare_csv) as csv_fp:
             w = csv.writer(csv_fp)
             # hashes as column headers
-            w.writerow([ "h"+str(h) for h in hashes ])
+            w.writerow([ str(h) for h in hashes ])
 
             for i in range(len(hashes)):
                 y = []
@@ -130,9 +135,9 @@ def main():
         with sourmash_args.FileOutputCSV(args.categories_csv) as csv_fp:
             w = csv.writer(csv_fp)
 
-            w.writerow(["labels", "attr"])
+            w.writerow(["labels", "category"])
             for hashval in hashes:
-                w.writerow(["h"+str(hashval), NAMES[classify_d[hashval]]])
+                w.writerow([hashval, NAMES[classify_d[hashval]]])
 
 
 if __name__ == '__main__':
