@@ -8,7 +8,9 @@ rule assoc:
         expand("agatha-genomes.10k.{p}.cmp.matrix.png",
                p=('shell', 'cloud', 'core')),
         expand("agatha-genomes.10k.{p}.cmp.matrix.pdf",
-               p=('shell', 'cloud', 'core'))
+               p=('shell', 'cloud', 'core')),
+        "agatha-genomes.10k.presence.csv",
+        "agatha-genomes.10k.presence.png",
 
 rule calc_genome_presence:
     input:
@@ -55,6 +57,28 @@ rule make_assoc_matrix_genomes_cloud:
         cat_csv="agatha-genomes.10k.cloud.cmp.categories.csv",
     shell: """
         ./calc-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12345 --categories {output.cat_csv} --compare-csv {output.csv}
+    """
+
+rule plot_hash_presence:
+    input:
+        dump="agatha-genomes.10k.dump",
+    output:
+        presence="agatha-genomes.10k.presence.csv",
+        cat="agatha-genomes.10k.presence.categories.csv",
+    shell: """
+        ./plot-hash-presence.py {input} -o {output.presence} \
+            --categories-csv {output.cat}
+    """
+
+rule plot_hash_presence_make_png:
+    input:
+        presence="agatha-genomes.10k.presence.csv",
+        cat="agatha-genomes.10k.presence.categories.csv",
+    output:
+        "agatha-genomes.10k.presence.png"
+    shell: """
+        sourmash scripts clustermap1 {input.presence} -u presence \
+            -C {input.cat} -o {output}
     """
 
 rule make_png_plot:
