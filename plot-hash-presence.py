@@ -62,7 +62,7 @@ def main():
         pass
     else:
         assert 0, f"cannot downsample to {args.scaled}, lower than {scaled}"
-        
+
     # filter hashes on presence
     new_d = {}
     for hashval, presence in hash_to_sample.items():
@@ -105,7 +105,6 @@ def main():
     with open(args.output, "w", newline="") as fp:
         w = csv.writer(fp)
         w.writerow(['query_name', 'match_name', 'presence'])
-        
 
         for hashval in hashes:
             presence_j = hash_to_sample[hashval]

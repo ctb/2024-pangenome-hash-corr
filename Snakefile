@@ -1,3 +1,5 @@
+# metagenome/hash exploration.
+
 # sourmash scripts fastmultigather ihmp-k21.sigs.zip gtdb-rs214-agatha-k21.zip  -k 21 -t 0
 # sourmash scripts fastmultigather ../ihmp-k21.sigs.zip ../agatha-merged.sig.zip -k 21 -t 0
 
