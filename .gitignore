@@ -7,3 +7,4 @@
 *.txt
 *.cmp
 *.dump
+__pycache__

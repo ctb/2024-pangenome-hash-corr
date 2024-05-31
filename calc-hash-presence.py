@@ -7,19 +7,8 @@ from collections import defaultdict
 import numpy
 import pickle
 
-
-CENTRAL_CORE=1
-EXTERNAL_CORE=2
-SHELL=3
-INNER_CLOUD=4
-SURFACE_CLOUD=5
-
-
-NAMES = { CENTRAL_CORE: 'central core',
-          EXTERNAL_CORE: 'external core',
-          SHELL: 'shell',
-          INNER_CLOUD: 'inner cloud',
-          SURFACE_CLOUD: 'surface cloud' }
+from sourmash_plugin_pangenomics import NAMES
+from hash_presence_lib import HashPresenceInformation
 
 
 def main():
@@ -81,9 +70,13 @@ def main():
                 if hashval in metag_hashes:
                     hash_to_sample[hashval].add(metag_name)
 
-    to_save = (args.ksize, args.scaled, classify_d, hash_to_sample)
-    with open(args.output, 'wb') as fp:
-        pickle.dump(to_save, fp)
+    presence_info = HashPresenceInformation(ksize=args.ksize,
+                                            scaled=args.scaled,
+                                            moltype='DNA',
+                                            classify_d=classify_d,
+                                            hash_to_sample=hash_to_sample)
+
+    presence_info.save_to_file(args.output)
 
     print(f'skipped: {n_skipped}')
 
