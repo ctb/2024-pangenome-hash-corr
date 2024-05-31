@@ -1,4 +1,5 @@
 import pickle
+import csv
 
 class HashPresenceInformation:
     def __init__(self, *, ksize=21, scaled=1000, moltype='DNA',
@@ -19,3 +20,16 @@ class HashPresenceInformation:
             obj = pickle.load(fp)
         assert isinstance(obj, cls)
         return obj
+
+
+def read_ranktable_csv(filename):
+    with open(filename, 'r', newline='') as fp:
+        r = csv.DictReader(fp)
+
+        classify_d = {}
+        for row in r:
+            hashval = int(row['hashval'])
+            classify_as = int(row['pangenome_classification'])
+            classify_d[hashval] = classify_as
+
+        return classify_d

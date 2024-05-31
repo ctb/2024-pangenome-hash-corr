@@ -9,19 +9,8 @@ import numpy
 import pickle
 import seaborn as sns
 
-
-CENTRAL_CORE=1
-EXTERNAL_CORE=2
-SHELL=3
-INNER_CLOUD=4
-SURFACE_CLOUD=5
-
-
-NAMES = { CENTRAL_CORE: 'central core',
-          EXTERNAL_CORE: 'external core',
-          SHELL: 'shell',
-          INNER_CLOUD: 'inner cloud',
-          SURFACE_CLOUD: 'surface cloud' }
+from sourmash_plugin_pangenomics import NAMES
+from hash_presence_lib import HashPresenceInformation
 
 
 def main():
@@ -34,12 +23,14 @@ def main():
     p.add_argument('--categories-csv', default=None)
     args = p.parse_args()
 
-    with open(args.presence_pickle, 'rb') as fp:
-        saved_info = pickle.load(fp)
-
-    ksize, scaled, classify_d, hash_to_sample = saved_info
+    presence_info = HashPresenceInformation.load_from_file(args.presence_pickle)
+    ksize = presence_info.ksize
+    scaled = presence_info.scaled
     if args.scaled is None:
-        args.scaled = scaled
+        args.scaled = presence_info.scaled
+    moltype = presence_info.moltype # @CTB
+    classify_d = presence_info.classify_d
+    hash_to_sample = presence_info.hash_to_sample
 
     print(f"loaded {len(hash_to_sample)} hash to sample entries.")
 

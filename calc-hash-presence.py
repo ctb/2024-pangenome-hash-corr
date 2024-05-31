@@ -8,7 +8,7 @@ import numpy
 import pickle
 
 from sourmash_plugin_pangenomics import NAMES
-from hash_presence_lib import HashPresenceInformation
+from hash_presence_lib import HashPresenceInformation, read_ranktable_csv
 
 
 def main():
@@ -21,15 +21,7 @@ def main():
     p.add_argument('--filter-samples', default=None)
     args = p.parse_args()
 
-    with open(args.hashlist, 'r', newline='') as fp:
-        r = csv.DictReader(fp)
-
-        classify_d = {}
-        for row in r:
-            hashval = int(row['hashval'])
-            classify_as = int(row['pangenome_classification'])
-            classify_d[hashval] = classify_as
-
+    classify_d = read_ranktable_csv(args.hashlist)
     print(f"loaded {len(classify_d)} hashvals... downsampling soon.")
 
     hash_to_sample = defaultdict(set)

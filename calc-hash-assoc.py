@@ -11,7 +11,6 @@ from sourmash_plugin_pangenomics import NAMES
 from hash_presence_lib import HashPresenceInformation
 
 
-
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('presence_pickle')
