@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+"""
+Calculate hash presence/absence information for many samples.
+"""
 import sys
 import argparse
 import sourmash
@@ -13,7 +16,7 @@ from hash_presence_lib import HashPresenceInformation, read_ranktable_csv
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('hashlist')
+    p.add_argument('ranktable_csv')
     p.add_argument('metagenomes')
     p.add_argument('-o', '--output', required=True)
     p.add_argument('-k', '--ksize', type=int, default=21)
@@ -21,7 +24,7 @@ def main():
     p.add_argument('--filter-samples', default=None)
     args = p.parse_args()
 
-    classify_d = read_ranktable_csv(args.hashlist)
+    classify_d = read_ranktable_csv(args.ranktable_csv)
     print(f"loaded {len(classify_d)} hashvals... downsampling soon.")
 
     hash_to_sample = defaultdict(set)

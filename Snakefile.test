@@ -1,13 +1,12 @@
 # run all the scripts, as a basic test!
-SCALED=1000
 
 rule assoc:
     input:
-        "agatha-genomes.10k.all.cmp.matrix.png",
-        "agatha-genomes.10k.all.cmp.matrix.pdf",
-        expand("agatha-genomes.10k.{p}.cmp.matrix.png",
+        "agatha-genomes.10k.all.assoc.png",
+        "agatha-genomes.10k.all.assoc.pdf",
+        expand("agatha-genomes.10k.{p}.assoc.png",
                p=('shell', 'cloud', 'core')),
-        expand("agatha-genomes.10k.{p}.cmp.matrix.pdf",
+        expand("agatha-genomes.10k.{p}.assoc.pdf",
                p=('shell', 'cloud', 'core')),
         "agatha-genomes.10k.presence.csv",
         "agatha-genomes.10k.presence.png",
@@ -16,61 +15,64 @@ rule calc_genome_presence:
     input:
         ranktable_csv = "ranktable.agathobacter_faecis.csv",
         db = "gtdb-rs214-agatha-k21.zip"
-    output: "agatha-genomes.10k.dump"
+    output: "agatha-genomes.1k.dump"
     shell: """
-        ./calc-hash-presence.py {input.ranktable_csv} {input.db} -o {output} --scaled={SCALED}
+        ./calc-hash-presence.py {input.ranktable_csv} {input.db} -o {output} --scaled=1000
     """
 
 rule make_assoc_matrix_genomes_all:
     input:
-        "agatha-genomes.10k.dump",
+        "agatha-genomes.1k.dump",
     output:
-        "agatha-genomes.10k.all.cmp",
+        cmp="agatha-genomes.10k.all.assoc",
+        labels="agatha-genomes.10k.all.assoc.labels.csv",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2
     """
 
 rule make_assoc_matrix_genomes_core:
     input:
-        "agatha-genomes.10k.dump",
+        "agatha-genomes.1k.dump",
     output:
-        "agatha-genomes.10k.core.cmp",
+        cmp="agatha-genomes.10k.core.assoc",
+        labels="agatha-genomes.10k.core.assoc.labels.csv",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 12
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12
     """
 
 rule make_assoc_matrix_genomes_shell:
     input:
-        "agatha-genomes.10k.dump",
+        "agatha-genomes.1k.dump",
     output:
-        "agatha-genomes.10k.shell.cmp",
+        cmp="agatha-genomes.10k.shell.assoc",
+        labels="agatha-genomes.10k.shell.assoc.labels.csv",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 --pangenome 3
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 3
     """
 
 rule make_assoc_matrix_genomes_cloud:
     input:
-        "agatha-genomes.10k.dump",
+        "agatha-genomes.1k.dump",
     output:
-        cmp="agatha-genomes.10k.cloud.cmp",
-        csv="agatha-genomes.10k.cloud.cmp.csv",
-        cat_csv="agatha-genomes.10k.cloud.cmp.categories.csv",
+        cmp="agatha-genomes.10k.cloud.assoc",
+        csv="agatha-genomes.10k.cloud.assoc.labels.csv",
+        cat_csv="agatha-genomes.10k.cloud.assoc.categories.csv",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12345 --categories {output.cat_csv} --compare-csv {output.csv}
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12345 --categories {output.cat_csv}
     """
 
-rule plot_hash_presence:
+rule make_hash_by_sample:
     input:
-        dump="agatha-genomes.10k.dump",
+        dump="agatha-genomes.1k.dump",
     output:
         presence="agatha-genomes.10k.presence.csv",
         cat="agatha-genomes.10k.presence.categories.csv",
     shell: """
-        ./plot-hash-presence.py {input} -o {output.presence} \
+        ./hash-by-sample.py {input} -o {output.presence} \
             --categories-csv {output.cat}
     """
 
-rule plot_hash_presence_make_png:
+rule make_clustermap:
     input:
         presence="agatha-genomes.10k.presence.csv",
         cat="agatha-genomes.10k.presence.categories.csv",
@@ -82,11 +84,15 @@ rule plot_hash_presence_make_png:
     """
 
 rule make_png_plot:
-    input: "{cmp}"
-    output: "{cmp}.matrix.png"
-    shell: "sourmash plot {input}"
+    input:
+        cmp="{cmp}",
+        cmp_csv="{cmp}.labels.csv",
+    output: "{cmp}.png"
+    shell: "sourmash scripts plot2 {input.cmp} {input.cmp_csv} -o {output}"
 
 rule make_pdf_plot:
-    input: "{cmp}"
-    output: "{cmp}.matrix.pdf"
-    shell: "sourmash plot {input} --pdf"
+    input:
+        cmp="{cmp}",
+        cmp_csv="{cmp}.labels.csv",
+    output: "{cmp}.pdf"
+    shell: "sourmash scripts plot2 {input.cmp} {input.cmp_csv} -o {output}"

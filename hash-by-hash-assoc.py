@@ -61,12 +61,19 @@ def main():
 
         pa[i][i] = 1
 
+    print(f"writing similarity matrix to '{args.output}'")
     with open(args.output, 'wb') as fp:
         numpy.save(fp, pa)
-    with open(args.output + '.labels.txt', 'wt') as fp:
-        hashstr = [ NAMES[classify_d[x]] for x in hashes ]
-        fp.write("\n".join(hashstr))
-    with open(args.output + '.labels.csv', 'w', newline='') as fp:
+    # for 'sourmash plot'
+
+    #with open(args.output + '.labels.txt', 'wt') as fp:
+    #    hashstr = [ NAMES[classify_d[x]] for x in hashes ]
+    #    fp.write("\n".join(hashstr))
+
+    # for 'sourmash plot --labels-from'
+    labels_to = args.output + '.labels.csv'
+    with open(labels_to, 'w', newline='') as fp:
+        print(f"writing labels_to file to '{labels_to}'")
         w = csv.writer(fp)
         w.writerow(['sort_order', 'label', 'category'])
         for n, x in enumerate(hashes):
@@ -85,6 +92,7 @@ def main():
                 w.writerow(y)
 
     if args.categories_csv:
+        print(f"writing categories CSV to '{args.categories_csv}'")
         with sourmash_args.FileOutputCSV(args.categories_csv) as csv_fp:
             w = csv.writer(csv_fp)
 

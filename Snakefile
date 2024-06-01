@@ -90,7 +90,7 @@ rule make_assoc_matrix_genomes:
     output:
         "agatha-genomes.10k.cmp",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 # --pangenome 3
+        ./hash-by-hash-assoc.py {input} -o {output} --scaled=10000 --min=2 # --pangenome 3
     """
 
 rule make_assoc_matrix_ihmp:
@@ -99,7 +99,7 @@ rule make_assoc_matrix_ihmp:
     output:
         "agatha-ihmp.10k.cmp",
     shell: """
-        ./calc-hash-assoc.py {input} -o {output} --scaled=10000 --min=10 --pangenome 12345
+        ./hash-by-hash-assoc.py {input} -o {output} --scaled=10000 --min=10 --pangenome 12345
     """
 
 rule make_png_plot:
