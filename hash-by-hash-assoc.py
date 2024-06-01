@@ -96,7 +96,7 @@ def main():
         with sourmash_args.FileOutputCSV(args.categories_csv) as csv_fp:
             w = csv.writer(csv_fp)
 
-            w.writerow(["labels", "category"])
+            w.writerow(["label", "category"])
             for hashval in hashes:
                 w.writerow([hashval, NAMES[classify_d[hashval]]])
 

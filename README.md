@@ -24,9 +24,10 @@ Next, produce a square matrix of hash x hash correlations across samples:
 ```
 ./hash-by-hash-assoc.py agatha-genomes.1k.dump \
     -o agatha-genomes.10k.assoc --scaled=10000 --min-presence=2 \
-    -C agatha-genomes.1k.presence.categories.csv
+    -C agatha-genomes.1k.assoc.categories.csv
 sourmash scripts plot3 agatha-genomes.10k.assoc \
-    agatha-genomes.10k.assoc.labels.csv -o agatha-genomes.10k.assoc.png
+    agatha-genomes.10k.assoc.labels.csv -o agatha-genomes.10k.assoc.png \
+    -C agatha-genomes.1k.assoc.categories.csv
 ```
 
 These commands produce this plot:
