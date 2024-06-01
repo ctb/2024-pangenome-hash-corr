@@ -14,11 +14,11 @@ rule assoc:
 
 rule calc_genome_presence:
     input:
-        pangenome_csv = "pangenome.agathobacter_faecis.csv",
+        ranktable_csv = "ranktable.agathobacter_faecis.csv",
         db = "gtdb-rs214-agatha-k21.zip"
     output: "agatha-genomes.10k.dump"
     shell: """
-        ./calc-hash-presence.py {input.pangenome_csv} {input.db} -o {output} --scaled={SCALED}
+        ./calc-hash-presence.py {input.ranktable_csv} {input.db} -o {output} --scaled={SCALED}
     """
 
 rule make_assoc_matrix_genomes_all:

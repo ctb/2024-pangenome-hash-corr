@@ -24,61 +24,24 @@ def main():
     args = p.parse_args()
 
     presence_info = HashPresenceInformation.load_from_file(args.presence_pickle)
-    ksize = presence_info.ksize
-    scaled = presence_info.scaled
-    if args.scaled is None:
-        args.scaled = presence_info.scaled
-    moltype = presence_info.moltype # @CTB
-    classify_d = presence_info.classify_d
-    hash_to_sample = presence_info.hash_to_sample
+    print(f"loaded {len(presence_info.hash_to_sample)} hash to sample entries.")
+    if args.scaled:
+        presence_info = presence_info.downsample(args.scaled)
+        print(f"downsampled to {presence_info.scaled}; {len(presence_info.hash_to_sample)} hashes left.")
 
-    print(f"loaded {len(hash_to_sample)} hash to sample entries.")
-
-    if args.scaled > scaled:
-        # downsample
-        mh = sourmash.MinHash(n=0, ksize=ksize, scaled=args.scaled)
-        for hashval in hash_to_sample:
-            mh.add_hash(hashval)
-
-        hashes = mh.hashes
-        new_d = {}
-        for hashval in hashes:
-            new_d[hashval] = hash_to_sample[hashval]
-
-        hash_to_sample = new_d
-        print(f"after downsampling from {scaled} => {args.scaled}, {len(new_d)} left.")
-
-        scaled = args.scaled
-    elif args.scaled == scaled:
-        pass
-    else:
-        assert 0, f"cannot downsample to {args.scaled}, lower than {scaled}"
-        
-
-    # filter hashes on presence
-    new_d = {}
-    for hashval, presence in hash_to_sample.items():
-        if len(presence) >= args.min_presence:
-            new_d[hashval] = presence
-
-    hash_to_sample = new_d
-    print(f"After presence-filtering to >= {args.min_presence}, {len(new_d)} left.")
+    if args.min_presence > 1:
+        presence_info = presence_info.filter_by_min_samples(args.min_presence)
+        print(f"filtered to min_presence={args.min_presence}; {len(presence_info.hash_to_sample)} hashes left.")
 
     # filter for pangenome_types
     if args.pangenome_types:
         typelist = list(map(int, list(args.pangenome_types)))
-        print(typelist)
-        assert min(typelist) >= 1
-        assert max(typelist) <= 5
+        presence_info = presence_info.filter_by_pangenome_type(typelist)
 
-        new_d = {}
-        for hashval, presence in hash_to_sample.items():
-            if classify_d.get(hashval) in typelist:
-                new_d[hashval] = presence
+        print(f"After pangenome-hash-type filtering to {typelist}, {len(presence_info.hash_to_sample)} left.")
 
-        print(f"After pangenome-hash-type filtering to {typelist}, {len(new_d)} left.")
-
-        hash_to_sample = new_d
+    classify_d = presence_info.classify_d
+    hash_to_sample = presence_info.hash_to_sample
 
     hashes = list(sorted(hash_to_sample))
 
