@@ -27,7 +27,7 @@ Next, produce a square matrix of hash x hash correlations across samples:
     -C agatha-genomes.1k.assoc.categories.csv
 sourmash scripts plot3 agatha-genomes.10k.assoc \
     agatha-genomes.10k.assoc.labels.csv -o agatha-genomes.10k.assoc.png \
-    -C agatha-genomes.1k.assoc.categories.csv
+    -C agatha-genomes.1k.assoc.categories.csv --no-labels
 ```
 
 These commands produce this plot:
@@ -41,7 +41,7 @@ Finally, produce a rectangular matrix showing hash x genome correlations:
     --categories-csv agatha-genomes.1k.presence.categories.csv
 sourmash scripts clustermap1 agatha-genomes.10k.presence.csv -u presence \
     -C agatha-genomes.1k.presence.categories.csv \
-    -o agatha-genomes.10k.presence.png
+    -o agatha-genomes.10k.presence.png --boolean --no-labels
 ```
 
 These commands produce this plot:
