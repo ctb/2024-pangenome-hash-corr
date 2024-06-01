@@ -7,6 +7,7 @@ import argparse
 import sourmash
 from sourmash import sourmash_args
 import csv
+import numpy
 
 from sourmash_plugin_pangenomics import NAMES
 from hash_presence_lib import HashPresenceInformation
