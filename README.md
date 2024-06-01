@@ -19,9 +19,11 @@ This repository contains three primary command-line scripts:
     
 # create & plot a square matrix showing hash x hash correlations across 2 or more samples
 ./hash-by-hash-assoc.py agatha-genomes.1k.dump \
-    -o agatha-genomes.10k.all.cmp --scaled=10000 --min-samples=2
-
-
+    -o agatha-genomes.10k.assoc --scaled=10000 --min-presence=2 \
+    -C agatha-genomes.1k.presence.categories.csv
+sourmash scripts plot3 agatha-genomes.10k.assoc \
+    agatha-genomes.10k.assoc.labels.csv -o agatha-genomes.10k.assoc.png \
+    -C agatha-genomes.1k.presence.categories.csv
 
 # create & plot a rectangular matrix showing hash x genome correlations
 ./hash-by-sample.py agatha-genomes.1k.dump \

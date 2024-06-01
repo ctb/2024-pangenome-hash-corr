@@ -16,10 +16,10 @@ def main():
     p.add_argument('presence_pickle')
     p.add_argument('-o', '--output', required=True)
     p.add_argument('--scaled', type=int, default=None)
-    p.add_argument('--min-presence', type=int, default=5)
+    p.add_argument('-m', '--min-presence', type=int, default=5)
     p.add_argument('--pangenome-types', type=str, default=None)
     p.add_argument('--compare-csv', help="write compare CSV", default=None)
-    p.add_argument('--categories-csv', help="write categories CSV",
+    p.add_argument('-C', '--categories-csv', help="write categories CSV",
                    default=None)
     args = p.parse_args()
 
