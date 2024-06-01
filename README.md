@@ -48,7 +48,7 @@ These commands produce this plot:
 
 ![](example_output/agatha-genomes.10k.presence.png)
 
-## Docoumentation
+## Documentation
 
 ### Running `calc-hash-presence.py`
 
