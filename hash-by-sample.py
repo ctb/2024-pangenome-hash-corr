@@ -1,13 +1,12 @@
 #! /usr/bin/env python
+"""
+using hash presence info, produce a rectangular matrix of hashval x sample.
+"""
 import sys
 import argparse
 import sourmash
 from sourmash import sourmash_args
 import csv
-from collections import defaultdict
-import numpy
-import pickle
-import seaborn as sns
 
 from sourmash_plugin_pangenomics import NAMES
 from hash_presence_lib import HashPresenceInformation
@@ -16,11 +15,11 @@ from hash_presence_lib import HashPresenceInformation
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('presence_pickle')
-    p.add_argument('-o', '--output', required=True)
+    p.add_argument('-o', '--output', required=True, help="output CSV")
     p.add_argument('--scaled', type=int, default=None)
-    p.add_argument('--min-presence', type=int, default=5)
+    p.add_argument('-m', '--min-presence', type=int, default=5)
     p.add_argument('--pangenome-types', type=str, default=None)
-    p.add_argument('--categories-csv', default=None)
+    p.add_argument('-C', '--categories-csv', default=None)
     args = p.parse_args()
 
     presence_info = HashPresenceInformation.load_from_file(args.presence_pickle)

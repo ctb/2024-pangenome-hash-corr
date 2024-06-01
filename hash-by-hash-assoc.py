@@ -1,10 +1,12 @@
 #! /usr/bin/env python
+"""
+using hash presence info, produce a square similarity matrix of hashval x hashval.
+"""
 import sys
 import argparse
 import sourmash
 from sourmash import sourmash_args
 import csv
-from collections import defaultdict
 import numpy
 
 from sourmash_plugin_pangenomics import NAMES
