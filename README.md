@@ -82,6 +82,13 @@ across sketches. This matrix is in numpy binary format nad can be
 displayed by several of the `plot` functions from the betterplot
 plugin.
 
+**Warning:* The output files are a little more complicated than the
+command line suggests! `hash-by-hash-assoc.py` produces _two_ files
+with `-o` - first, the specified filename, which is a numpy binary
+matrix; and second, a 'labels_to' CSV file (see
+[sourmash compare docs](https://sourmash.readthedocs.io/en/latest/command-line.html#sourmash-compare-compare-many-signatures)) that provides label names.
+This second file is named `<output>.labels.csv`, and must be passed in
+explicitly to `sourmash plot --labels-from` as well as `plot2` and `plot3`.
 
 Optional parameters:
 
@@ -106,4 +113,4 @@ Optional parameters:
 * `--scaled` - downsample from scaled chosen for `calc-hash-presence.py`
 * `--min-presence` - require that hashes be present in at least this many samples
 * `--pangenome-types` - require that hashes be of this pangenome rank (default: '12345')
-* `--categories-csv` - write a categories file suitable for betterplot category coloring
+* `--categories-csv` - write a categories file suitable for betterplot category coloring of hash pangenome rank types (e.g. for use in column category coloring with `clustermap1`).
