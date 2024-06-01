@@ -48,11 +48,14 @@ These commands produce this plot:
 
 ![](example_output/agatha-genomes.10k.presence.png)
 
-### Running `calc-hash-presence`
+## Docoumentation
+
+### Running `calc-hash-presence.py`
 
 Usage: 
 ```
-./calc-hash-presence.py <ranktable_csv> <sample1> [<samples ...>] -o <output>.dump
+./calc-hash-presence.py <ranktable_csv> <sample1> [<samples ...>] \
+    -o <output>.dump
 ```
 will calculate presence/absence info for the hash values in
 `ranktable_csv` across `sample*` sketches, saving the info to
