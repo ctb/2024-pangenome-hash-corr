@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+"""
+Calculate hash presence/absence information for many samples.
+"""
 import sys
 import argparse
 import sourmash
@@ -7,24 +10,13 @@ from collections import defaultdict
 import numpy
 import pickle
 
-
-CENTRAL_CORE=1
-EXTERNAL_CORE=2
-SHELL=3
-INNER_CLOUD=4
-SURFACE_CLOUD=5
-
-
-NAMES = { CENTRAL_CORE: 'central core',
-          EXTERNAL_CORE: 'external core',
-          SHELL: 'shell',
-          INNER_CLOUD: 'inner cloud',
-          SURFACE_CLOUD: 'surface cloud' }
+from sourmash_plugin_pangenomics import NAMES
+from hash_presence_lib import HashPresenceInformation, read_ranktable_csv
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('hashlist')
+    p.add_argument('ranktable_csv')
     p.add_argument('metagenomes')
     p.add_argument('-o', '--output', required=True)
     p.add_argument('-k', '--ksize', type=int, default=21)
@@ -32,15 +24,7 @@ def main():
     p.add_argument('--filter-samples', default=None)
     args = p.parse_args()
 
-    with open(args.hashlist, 'r', newline='') as fp:
-        r = csv.DictReader(fp)
-
-        classify_d = {}
-        for row in r:
-            hashval = int(row['hashval'])
-            classify_as = int(row['pangenome_classification'])
-            classify_d[hashval] = classify_as
-
+    classify_d = read_ranktable_csv(args.ranktable_csv)
     print(f"loaded {len(classify_d)} hashvals... downsampling soon.")
 
     hash_to_sample = defaultdict(set)
@@ -81,9 +65,13 @@ def main():
                 if hashval in metag_hashes:
                     hash_to_sample[hashval].add(metag_name)
 
-    to_save = (args.ksize, args.scaled, classify_d, hash_to_sample)
-    with open(args.output, 'wb') as fp:
-        pickle.dump(to_save, fp)
+    presence_info = HashPresenceInformation(ksize=args.ksize,
+                                            scaled=args.scaled,
+                                            moltype='DNA',
+                                            classify_d=classify_d,
+                                            hash_to_sample=hash_to_sample)
+
+    presence_info.save_to_file(args.output)
 
     print(f'skipped: {n_skipped}')
 

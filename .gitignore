@@ -7,3 +7,5 @@
 *.txt
 *.cmp
 *.dump
+*.assoc
+__pycache__

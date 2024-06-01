@@ -9,19 +9,8 @@ import numpy
 import pickle
 import seaborn as sns
 
-
-CENTRAL_CORE=1
-EXTERNAL_CORE=2
-SHELL=3
-INNER_CLOUD=4
-SURFACE_CLOUD=5
-
-
-NAMES = { CENTRAL_CORE: 'central core',
-          EXTERNAL_CORE: 'external core',
-          SHELL: 'shell',
-          INNER_CLOUD: 'inner cloud',
-          SURFACE_CLOUD: 'surface cloud' }
+from sourmash_plugin_pangenomics import NAMES
+from hash_presence_lib import HashPresenceInformation
 
 
 def main():
@@ -34,59 +23,25 @@ def main():
     p.add_argument('--categories-csv', default=None)
     args = p.parse_args()
 
-    with open(args.presence_pickle, 'rb') as fp:
-        saved_info = pickle.load(fp)
+    presence_info = HashPresenceInformation.load_from_file(args.presence_pickle)
+    print(f"loaded {len(presence_info.hash_to_sample)} hash to sample entries.")
+    if args.scaled:
+        presence_info = presence_info.downsample(args.scaled)
+        print(f"downsampled to {presence_info.scaled}; {len(presence_info.hash_to_sample)} hashes left.")
 
-    ksize, scaled, classify_d, hash_to_sample = saved_info
-    if args.scaled is None:
-        args.scaled = scaled
-
-    print(f"loaded {len(hash_to_sample)} hash to sample entries.")
-
-    if args.scaled > scaled:
-        # downsample
-        mh = sourmash.MinHash(n=0, ksize=ksize, scaled=args.scaled)
-        for hashval in hash_to_sample:
-            mh.add_hash(hashval)
-
-        hashes = mh.hashes
-        new_d = {}
-        for hashval in hashes:
-            new_d[hashval] = hash_to_sample[hashval]
-
-        hash_to_sample = new_d
-        print(f"after downsampling from {scaled} => {args.scaled}, {len(new_d)} left.")
-
-        scaled = args.scaled
-    elif args.scaled == scaled:
-        pass
-    else:
-        assert 0, f"cannot downsample to {args.scaled}, lower than {scaled}"
-
-    # filter hashes on presence
-    new_d = {}
-    for hashval, presence in hash_to_sample.items():
-        if len(presence) >= args.min_presence:
-            new_d[hashval] = presence
-
-    hash_to_sample = new_d
-    print(f"After presence-filtering to >= {args.min_presence}, {len(new_d)} left.")
+    if args.min_presence > 1:
+        presence_info = presence_info.filter_by_min_samples(args.min_presence)
+        print(f"filtered to min_presence={args.min_presence}; {len(presence_info.hash_to_sample)} hashes left.")
 
     # filter for pangenome_types
     if args.pangenome_types:
         typelist = list(map(int, list(args.pangenome_types)))
-        print(typelist)
-        assert min(typelist) >= 1
-        assert max(typelist) <= 5
+        presence_info = presence_info.filter_by_pangenome_type(typelist)
 
-        new_d = {}
-        for hashval, presence in hash_to_sample.items():
-            if classify_d.get(hashval) in typelist:
-                new_d[hashval] = presence
+        print(f"After pangenome-hash-type filtering to {typelist}, {len(presence_info.hash_to_sample)} left.")
 
-        print(f"After pangenome-hash-type filtering to {typelist}, {len(new_d)} left.")
-
-        hash_to_sample = new_d
+    classify_d = presence_info.classify_d
+    hash_to_sample = presence_info.hash_to_sample
 
     # collect hashes
     hashes = list(sorted(hash_to_sample))

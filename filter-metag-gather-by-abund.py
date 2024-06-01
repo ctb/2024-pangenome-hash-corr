@@ -1,4 +1,10 @@
 #! /usr/bin/env python
+"""
+A hackity-hack script used to run through a gather file and extract only
+those names that have a certain abundance match in them.
+
+CTB 5/31/2024
+"""
 import sys
 import csv
 import argparse
