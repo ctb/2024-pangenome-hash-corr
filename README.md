@@ -6,7 +6,7 @@ This repository contains three primary command-line scripts:
 
 1. `calc-hash-presence.py` - calculate hash presence/absence information for many samples.
 2. `hash-by-hash-assoc.py` - using hash presence info, produce a square similarity matrix of hashval x hashval.
-3. `hash-by-sample-assoc.py` - using hash presence info, produce a rectangular matrix of hashval x sample.
+3. `hash-by-sample.py` - using hash presence info, produce a rectangular matrix of hashval x sample.
 
 ## Quickstart
 
@@ -50,7 +50,7 @@ These commands produce this plot:
 
 ## Documentation
 
-### Running `calc-hash-presence.py`
+### `calc-hash-presence.py`
 
 Usage: 
 ```
@@ -67,6 +67,43 @@ will calculate presence/absence info for the hash values in
 Optional parameters:
 
 * `-k`, `--ksize` - select k-mer size
-* `filter-samples` - use only these samples
-* `--moltype` (CTB: does not yet work)
+* `filter-samples` - use only these samples (CTB: more docs needed)
+* `--moltype` (@CTB: does not yet work)
 
+### `hash-by-hash-assoc.py`
+
+Usage: 
+```
+./hash-by-hash-assoc.py <presence_dump> -o <output_csv>
+```
+will calculate a square similarity matrix of hashes by hashes, where
+each value is the Jaccard similarity of the hash presence vectors
+across sketches. This matrix is in numpy binary format nad can be
+displayed by several of the `plot` functions from the betterplot
+plugin.
+
+
+Optional parameters:
+
+* `--scaled` - downsample from scaled chosen for `calc-hash-presence.py`
+* `--min-presence` - require that hashes be present in at least this many samples
+* `--pangenome-types` - require that hashes be of this pangenome rank (default: '12345')
+* `--categories-csv` - write a categories file suitable for betterplot category coloring
+* `--compare-csv` - write an output square matrix CSV.
+
+### `hash-by-sample.py`
+
+Usage: 
+```
+./hash-by-sample.py <presence_dump> -o <output_csv> 
+```
+will calculate a rectangular matrix matching hashes to samples,
+suitable for display by e.g.  `clustermap1` from the betterplot
+plugin.
+
+Optional parameters:
+
+* `--scaled` - downsample from scaled chosen for `calc-hash-presence.py`
+* `--min-presence` - require that hashes be present in at least this many samples
+* `--pangenome-types` - require that hashes be of this pangenome rank (default: '12345')
+* `--categories-csv` - write a categories file suitable for betterplot category coloring
