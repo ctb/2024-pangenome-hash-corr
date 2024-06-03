@@ -44,6 +44,18 @@ rule cluster_assoc_matrix_all:
             --save-categories-csv {output.categories_csv}
     """
 
+rule plot_cluster_assoc_matrix_all:
+    input:
+        cmp="agatha-genomes.10k.all.assoc",
+        cmp_csv="agatha-genomes.10k.all.assoc.labels.csv",
+        categories_csv="agatha-genomes.10k.all.assoc.cluster_cats.csv",
+    output: "agatha-genomes.10k.all.assoc.categories.png"
+    shell: """
+        sourmash scripts plot3 {input.cmp} {input.cmp_csv} -o {output} \
+            -C {input.categories_csv} --no-labels
+    """
+
+
 rule make_assoc_matrix_genomes_core:
     input:
         "agatha-genomes.1k.dump",

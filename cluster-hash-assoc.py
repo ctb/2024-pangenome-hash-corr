@@ -132,6 +132,8 @@ def main():
                 name = f"cluster {k}"
                 for hashval in v:
                     w.writerow([hashval, name])
+            for hashval in unclust:
+                w.writerow([hashval, "unclustered"])
 
 
 if __name__ == '__main__':
