@@ -46,6 +46,7 @@ def main():
     hash_to_sample = presence_info.hash_to_sample
 
     hashes = list(sorted(hash_to_sample))
+    print(f"creating {len(hashes)} by {len(hashes)} array.")
 
     pa = numpy.zeros((len(hashes), len(hashes)), dtype=float)
 
