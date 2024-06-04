@@ -26,7 +26,7 @@ def main():
     print(f"loaded {len(presence_info.hash_to_sample)} hash to sample entries.")
     if args.scaled:
         presence_info = presence_info.downsample(args.scaled)
-        print(f"downsampled to {presence_info.scaled}; {len(presence_info.hash_to_sample)} hashes left.")
+        print(f"downsampled to scaled={presence_info.scaled}; {len(presence_info.hash_to_sample)} hashes left.")
 
     if args.min_presence > 1:
         presence_info = presence_info.filter_by_min_samples(args.min_presence)

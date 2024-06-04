@@ -10,6 +10,7 @@ rule assoc:
                p=('shell', 'cloud', 'core')),
         "agatha-genomes.10k.presence.csv",
         "agatha-genomes.10k.presence.png",
+        "agatha-genomes.10k.cluster.tsne.png",
 
 rule calc_genome_presence:
     input:
@@ -17,7 +18,7 @@ rule calc_genome_presence:
         db = "gtdb-rs214-agatha-k21.zip"
     output: "agatha-genomes.1k.dump"
     shell: """
-        ./calc-hash-presence.py {input.ranktable_csv} {input.db} -o {output} --scaled=1000
+        ./calc-hash-presence.py {input.ranktable_csv} {input.db} -o {output} --scaled=1000 -k 21
     """
 
 rule make_assoc_matrix_genomes_all:
@@ -26,8 +27,26 @@ rule make_assoc_matrix_genomes_all:
     output:
         cmp="agatha-genomes.10k.all.assoc",
         labels="agatha-genomes.10k.all.assoc.labels.csv",
+        categories="agatha-genomes.10k.all.assoc.categories.csv",
     shell: """
-        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=5 \
+            -C {output.categories}
+    """
+
+rule cluster_assoc_matrix_all:
+    input:
+        "agatha-genomes.1k.dump",
+    output:
+        tsne="agatha-genomes.10k.cluster.tsne.png",
+        assoc="agatha-genomes.10k.cluster.assoc.png",
+        presence="agatha-genomes.10k.cluster.presence.png",
+        categories_csv="agatha-genomes.10k.all.assoc.cluster_cats.csv"
+    shell: """
+        ./cluster-hash-assoc.py {input} --scaled=10000 \
+            --output-tsne {output.tsne} \
+            --output-assoc {output.assoc} \
+            --output-presence {output.presence} \
+            --save-categories-csv {output.categories_csv}
     """
 
 rule make_assoc_matrix_genomes_core:
@@ -37,7 +56,7 @@ rule make_assoc_matrix_genomes_core:
         cmp="agatha-genomes.10k.core.assoc",
         labels="agatha-genomes.10k.core.assoc.labels.csv",
     shell: """
-        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=5 --pangenome 12
     """
 
 rule make_assoc_matrix_genomes_shell:
@@ -47,7 +66,7 @@ rule make_assoc_matrix_genomes_shell:
         cmp="agatha-genomes.10k.shell.assoc",
         labels="agatha-genomes.10k.shell.assoc.labels.csv",
     shell: """
-        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 3
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=5 --pangenome 3
     """
 
 rule make_assoc_matrix_genomes_cloud:
@@ -58,7 +77,7 @@ rule make_assoc_matrix_genomes_cloud:
         csv="agatha-genomes.10k.cloud.assoc.labels.csv",
         cat_csv="agatha-genomes.10k.cloud.assoc.categories.csv",
     shell: """
-        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=2 --pangenome 12345 --categories {output.cat_csv}
+        ./hash-by-hash-assoc.py {input} -o {output.cmp} --scaled=10000 --min=5 --pangenome 12345 --categories {output.cat_csv}
     """
 
 rule make_hash_by_sample:
@@ -69,7 +88,7 @@ rule make_hash_by_sample:
         cat="agatha-genomes.10k.presence.categories.csv",
     shell: """
         ./hash-by-sample.py {input} -o {output.presence} \
-            --categories-csv {output.cat}
+            --categories-csv {output.cat} --min=5 --scaled=10000
     """
 
 rule make_clustermap:

@@ -45,14 +45,14 @@ def main():
     classify_d = presence_info.classify_d
     hash_to_sample = presence_info.hash_to_sample
 
-    hashes = list(sorted(hash_to_sample))
+    hashes, pa = presence_info.build_association_matrix()
 
     pa = numpy.zeros((len(hashes), len(hashes)), dtype=float)
 
     for i in range(len(hashes)):
         hash_i = hashes[i]
         presence_i = hash_to_sample[hash_i]
-        
+
         for j in range(i):
             hash_j = hashes[j]
             presence_j = hash_to_sample[hash_j]
