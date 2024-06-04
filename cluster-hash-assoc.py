@@ -17,14 +17,12 @@ from collections import defaultdict
 from matplotlib.lines import Line2D
 
 
-from sourmash_plugin_betterplot import load_categories_csv
-
+from hash_presence_lib import HashPresenceInformation
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('cmp_matrix')
-    p.add_argument('cmp_labels_from')
-    p.add_argument('-m', '--min-cluster-size', type=int, default=15,
+    p.add_argument('presence_pickle')
+    p.add_argument('--min-cluster-size', type=int, default=15,
                    help='hdbscan min_cluster_size parameter')
     p.add_argument('--output-tsne',
                    help='save (optional) tSNE plot to this file')
@@ -33,20 +31,45 @@ def main():
         default=None,
         help="prefix to prepend to cluster names; default is cmp file",
     )
-    # these are needed because we don't track them in the matrix :sob:
-    p.add_argument('--output-ksize', default=31, type=int)
-    p.add_argument('--output-moltype', default='DNA')
-    p.add_argument('--output-scaled', default=1000, type=int)
-    p.add_argument('--save-categories-csv')
+    p.add_argument('--scaled', type=int, default=None)
+    p.add_argument('--min-presence', type=int, default=5)
+    p.add_argument('--save-categories-csv',
+                   help="write categories CSV for clusters")
     args = p.parse_args()
 
-    # load matrix & turn into distance matrix
-    cmp = numpy.load(args.cmp_matrix)
-    dist = 1 - cmp
+    presence_info = HashPresenceInformation.load_from_file(args.presence_pickle)
+    print(f"loaded {len(presence_info.hash_to_sample)} hash to sample entries.")
+    if args.scaled:
+        presence_info = presence_info.downsample(args.scaled)
+        print(f"downsampled to {presence_info.scaled}; {len(presence_info.hash_to_sample)} hashes left.")
 
-    # load matrix labels
-    with sourmash_args.FileInputCSV(args.cmp_labels_from) as r:
-        labelinfo = list(r)
+    if args.min_presence > 1:
+        presence_info = presence_info.filter_by_min_samples(args.min_presence)
+        print(f"filtered to min_presence={args.min_presence}; {len(presence_info.hash_to_sample)} hashes left.")
+
+    hash_to_sample = presence_info.hash_to_sample
+
+    hashvals = list(sorted(hash_to_sample))
+    print(f"creating {len(hashvals)} by {len(hashvals)} array.")
+
+    pa = numpy.zeros((len(hashvals), len(hashvals)), dtype=float)
+
+    for i in range(len(hashvals)):
+        hash_i = hashvals[i]
+        presence_i = hash_to_sample[hash_i]
+
+        for j in range(i):
+            hash_j = hashvals[j]
+            presence_j = hash_to_sample[hash_j]
+            jaccard = len(presence_i.intersection(presence_j)) / \
+                len(presence_i.union(presence_j))
+            pa[i][j] = jaccard
+            pa[j][i] = jaccard
+
+        pa[i][i] = 1
+
+    # turn into distance matrix
+    dist = 1 - pa
 
     # cluster!
     print(f"clustering using hdbscan with min_cluster_size={args.min_cluster_size}")
@@ -58,11 +81,6 @@ def main():
     print(f'got {numpy.unique(labels).max()} clusters')
 
     ## pull out the clusters ;)
-    hashinfo = list(labelinfo)
-
-    hashinfo.sort(key=lambda row: int(row["sort_order"]))
-    hashvals = [ int(row['label']) for row in hashinfo ]
-
     clusters_d = defaultdict(set)
     unclust = set()
     for hashval, cluster_num in zip(hashvals, labels):
@@ -86,12 +104,10 @@ def main():
             break
 
     # output clusters
-    prefix = args.cluster_prefix or os.path.basename(args.cmp_matrix)
+    prefix = args.cluster_prefix or os.path.basename(args.presence_pickle)
     print(f"outputting clusters with prefix '{prefix}'")
 
-    assert args.output_moltype == 'DNA'
-    mh_template = sourmash.MinHash(n=0, ksize=args.output_ksize,
-                          scaled=args.output_scaled)
+    mh_template = presence_info._make_minhash_obj()
 
     cluster_n = 0
     for k, v in sorted(clusters_d.items()):

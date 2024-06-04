@@ -35,14 +35,13 @@ rule make_assoc_matrix_genomes_all:
 
 rule cluster_assoc_matrix_all:
     input:
-        cmp="agatha-genomes.10k.all.assoc",
-        labels="agatha-genomes.10k.all.assoc.labels.csv",
+        "agatha-genomes.1k.dump",
     output:
         tsne="agatha-genomes.10k.all.assoc.tsne.png",
         categories_csv="agatha-genomes.10k.all.assoc.cluster_cats.csv"
     shell: """
-        ./cluster-hash-assoc.py {input.cmp} {input.labels} \
-            --output-tsne {output.tsne} --output-k=21 --output-scaled=10000 \
+        ./cluster-hash-assoc.py {input} \
+            --output-tsne {output.tsne} --scaled=10000 \
             --save-categories-csv {output.categories_csv}
     """
 

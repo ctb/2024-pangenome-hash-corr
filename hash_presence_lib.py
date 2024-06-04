@@ -18,6 +18,11 @@ class HashPresenceInformation:
         self.moltype = moltype
         self.classify_d = classify_d
         self.hash_to_sample = hash_to_sample
+        assert self.moltype == 'DNA'
+
+    def _make_minhash_obj(self):
+        assert self.moltype == 'DNA'
+        return sourmash.MinHash(n=0, ksize=self.ksize, scaled=self.scaled)
 
     def downsample(self, new_scaled):
         "Downsample hashes to a new scaled value."
