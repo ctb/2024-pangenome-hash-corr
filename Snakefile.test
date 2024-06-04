@@ -37,25 +37,17 @@ rule cluster_assoc_matrix_all:
     input:
         "agatha-genomes.1k.dump",
     output:
-        tsne="agatha-genomes.10k.all.assoc.tsne.png",
+        tsne="agatha-genomes.10k.cluster.tsne.png",
+        assoc="agatha-genomes.10k.cluster.assoc.png",
+        presence="agatha-genomes.10k.cluster.presence.png",
         categories_csv="agatha-genomes.10k.all.assoc.cluster_cats.csv"
     shell: """
-        ./cluster-hash-assoc.py {input} \
-            --output-tsne {output.tsne} --scaled=10000 \
+        ./cluster-hash-assoc.py {input} --scaled=10000 \
+            --output-tsne {output.tsne} \
+            --output-assoc {output.assoc} \
+            --output-presence {output.presence} \
             --save-categories-csv {output.categories_csv}
     """
-
-rule plot_cluster_assoc_matrix_all:
-    input:
-        cmp="agatha-genomes.10k.all.assoc",
-        cmp_csv="agatha-genomes.10k.all.assoc.labels.csv",
-        categories_csv="agatha-genomes.10k.all.assoc.cluster_cats.csv",
-    output: "agatha-genomes.10k.all.assoc.categories.png"
-    shell: """
-        sourmash scripts plot3 {input.cmp} {input.cmp_csv} -o {output} \
-            -C {input.categories_csv} --no-labels
-    """
-
 
 rule make_assoc_matrix_genomes_core:
     input:

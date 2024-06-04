@@ -24,8 +24,12 @@ def main():
     p.add_argument('presence_pickle')
     p.add_argument('--min-cluster-size', type=int, default=15,
                    help='hdbscan min_cluster_size parameter')
-    p.add_argument('--output-tsne',
+    p.add_argument('--output-tsne-plot',
                    help='save (optional) tSNE plot to this file')
+    p.add_argument('--output-assoc-plot',
+                   help='save (optional) square hash association plot to this file')
+    p.add_argument('--output-presence-plot',
+                   help='save (optional) rectangular sample presence plot to this file')
     p.add_argument(
         "--cluster-prefix",
         default=None,
@@ -52,7 +56,7 @@ def main():
     hashvals = list(sorted(hash_to_sample))
     print(f"creating {len(hashvals)} by {len(hashvals)} array.")
 
-    pa = numpy.zeros((len(hashvals), len(hashvals)), dtype=float)
+    cmp = numpy.zeros((len(hashvals), len(hashvals)), dtype=float)
 
     for i in range(len(hashvals)):
         hash_i = hashvals[i]
@@ -63,13 +67,13 @@ def main():
             presence_j = hash_to_sample[hash_j]
             jaccard = len(presence_i.intersection(presence_j)) / \
                 len(presence_i.union(presence_j))
-            pa[i][j] = jaccard
-            pa[j][i] = jaccard
+            cmp[i][j] = jaccard
+            cmp[j][i] = jaccard
 
-        pa[i][i] = 1
+        cmp[i][i] = 1
 
     # turn into distance matrix
-    dist = 1 - pa
+    dist = 1 - cmp
 
     # cluster!
     print(f"clustering using hdbscan with min_cluster_size={args.min_cluster_size}")
@@ -123,8 +127,8 @@ def main():
         cluster_n += 1
     
     # plot tSNE?
-    if args.output_tsne:
-        print(f"running tSNE & saving to {args.output_tsne}")
+    if args.output_tsne_plot:
+        print(f"running tSNE & saving to {args.output_tsne_plot}")
         tsne = sklearn.manifold.TSNE(n_components=2, random_state=42, perplexity=50) # play with: perplexity
         tsne_coords = tsne.fit_transform(dist)
 
@@ -135,7 +139,72 @@ def main():
         plt.xlabel("Dimension 1")
         plt.ylabel("Dimension 2")
 
-        plt.savefig(args.output_tsne)
+        plt.savefig(args.output_tsne_plot)
+
+    ## square association plot, our standard "cmp"
+
+    if args.output_assoc_plot:
+        print(f"running square association plot & saving to {args.output_assoc_plot}")
+
+        palette = sns.color_palette('deep', numpy.unique(labels).max() + 1)
+        # make uncluster => white
+        cluster_colors = [palette[x] if x >= 0 else (1.0, 1.0, 1.0) for x in labels]
+
+        fig = sns.clustermap(cmp, xticklabels=[], yticklabels=[], figsize=(8, 8), row_colors=cluster_colors) # , col_colors=category_colors)
+
+        # create a custom legend of just the pangenome rank colors on the columns
+        if 0:
+            legend_elements = []
+            for k, v in category_map.items():
+                legend_elements.append(
+                    Line2D([0], [0], color=v, label=k, marker="o", lw=0)
+                )
+                fig.ax_col_dendrogram.legend(handles=legend_elements)
+
+        plt.savefig(args.output_assoc_plot)
+
+    ## rectangular presence plot
+
+    if args.output_presence_plot:
+        print(f"running rectangular presence plot & saving to {args.output_presence_plot}")
+
+        # make presence_mat!
+
+        # get list of samples:
+        all_samples = set()
+        for k, vv in presence_info.hash_to_sample.items():
+            all_samples.update(vv)
+
+        print(f"got {len(all_samples)} samples for presence plot.")
+
+        sample_to_idx = {}
+        for n, sample_name in enumerate(sorted(all_samples)):
+            sample_to_idx[sample_name] = n
+
+        hashval_to_idx = {}
+        for n, hashval in enumerate(presence_info.hash_to_sample):
+            hashval_to_idx[hashval] = n
+
+        print(f"creating presence matrix: {len(sample_to_idx)} x {len(hashval_to_idx)}")
+        presence_mat = numpy.zeros((len(sample_to_idx), len(hashval_to_idx)))
+
+        for hashval, sample_set in presence_info.hash_to_sample.items():
+            hashval_i = hashval_to_idx[hashval]
+            for sample_name in sample_set:
+                sample_j = sample_to_idx[sample_name]
+
+                presence_mat[sample_j][hashval_i] = 1
+
+        palette = sns.color_palette('deep', numpy.unique(labels).max() + 1)
+        # make uncluster => white
+        cluster_colors = [palette[x] if x >= 0 else (1.0, 1.0, 1.0) for x in labels]
+
+        fig = sns.clustermap(presence_mat,
+                             figsize=(11, 8),
+                             xticklabels=[], yticklabels=[],
+                             col_colors=cluster_colors,
+                             cbar_pos=None)
+        plt.savefig(args.output_presence_plot)
 
     # save categories file for clustermap1/plot3 plotting?
     if args.save_categories_csv:
