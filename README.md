@@ -123,6 +123,8 @@ Usage:
 ./cluster-hash-assoc.py.py <presence_dump> -o <output_csv> 
 ```
 will calculate clusters of hashes and output them as sourmash sketches.
+One output option is a "categories" file that matches hash values to clusters
+and can be used in customizing downstream plots and analyses.
 It will also optionally output a labeled tSNE plot,
 a hash-by-hash association plot, and a sample-by-hash presence/absence plot,
 all annotated with the clusters.
@@ -135,3 +137,4 @@ Optional parameters:
 * `--output-assoc-plot` - save hash-by-hash association plot to this file
 * `--output-presence-plot` - save sample-by-hash presence/absence plot to this file
 * `--cluster-prefix` - filename prefix to prepend to output clusters.
+* `--save-categories-csv` - filename to save hashvals and labels to.
