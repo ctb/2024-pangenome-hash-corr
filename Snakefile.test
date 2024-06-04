@@ -10,7 +10,7 @@ rule assoc:
                p=('shell', 'cloud', 'core')),
         "agatha-genomes.10k.presence.csv",
         "agatha-genomes.10k.presence.png",
-        "agatha-genomes.10k.all.assoc.tsne.png",
+        "agatha-genomes.10k.cluster.tsne.png",
 
 rule calc_genome_presence:
     input:

@@ -2,11 +2,12 @@
 
 ## Calculating hash correlations across sketches (genomes or metagenomes).
 
-This repository contains three primary command-line scripts:
+This repository contains four primary command-line scripts:
 
 1. `calc-hash-presence.py` - calculate hash presence/absence information for many samples.
 2. `hash-by-hash-assoc.py` - using hash presence info, produce a square similarity matrix of hashval x hashval.
 3. `hash-by-sample.py` - using hash presence info, produce a rectangular matrix of hashval x sample.
+4. `cluster-hash-assoc.py` - cluster hashes by association and display associated plots.
 
 ## Quickstart
 
@@ -114,3 +115,23 @@ Optional parameters:
 * `--min-presence` - require that hashes be present in at least this many samples
 * `--pangenome-types` - require that hashes be of this pangenome rank (default: '12345')
 * `--categories-csv` - write a categories file suitable for betterplot category coloring of hash pangenome rank types (e.g. for use in column category coloring with `clustermap1`).
+
+### `cluster-hash-assoc.py`
+
+Usage: 
+```
+./cluster-hash-assoc.py.py <presence_dump> -o <output_csv> 
+```
+will calculate clusters of hashes and output them as sourmash sketches.
+It will also optionally output a labeled tSNE plot,
+a hash-by-hash association plot, and a sample-by-hash presence/absence plot,
+all annotated with the clusters.
+
+Optional parameters:
+
+* `--scaled` - downsample from scaled chosen for `calc-hash-presence.py`
+* `--min-presence` - require that hashes be present in at least this many samples
+* `--output-tsne-plot` - save tSNE plot to this file
+* `--output-assoc-plot` - save hash-by-hash association plot to this file
+* `--output-presence-plot` - save sample-by-hash presence/absence plot to this file
+* `--cluster-prefix` - filename prefix to prepend to output clusters.

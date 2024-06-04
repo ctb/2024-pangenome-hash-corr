@@ -33,7 +33,7 @@ def main():
     p.add_argument(
         "--cluster-prefix",
         default=None,
-        help="prefix to prepend to cluster names; default is cmp file",
+        help="prefix to prepend to cluster names; default is presence pickle file",
     )
     p.add_argument('--scaled', type=int, default=None)
     p.add_argument('--min-presence', type=int, default=5)
@@ -170,13 +170,13 @@ def main():
         with sourmash_args.FileOutputCSV(args.save_categories_csv) as csv_fp:
             w = csv.writer(csv_fp)
 
-            w.writerow(["label", "category"])
+            w.writerow(["label", "category", "cluster"])
             for k, v in clusters_d.items():
                 name = f"cluster {k}"
                 for hashval in v:
-                    w.writerow([hashval, name])
+                    w.writerow([hashval, name, k])
             for hashval in unclust:
-                w.writerow([hashval, "unclustered"])
+                w.writerow([hashval, "unclustered", -1])
 
 
 if __name__ == '__main__':
