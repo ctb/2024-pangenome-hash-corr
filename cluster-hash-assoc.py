@@ -51,26 +51,8 @@ def main():
         presence_info = presence_info.filter_by_min_samples(args.min_presence)
         print(f"filtered to min_presence={args.min_presence}; {len(presence_info.hash_to_sample)} hashes left.")
 
-    hash_to_sample = presence_info.hash_to_sample
-
-    hashvals = list(sorted(hash_to_sample))
-    print(f"creating {len(hashvals)} by {len(hashvals)} array.")
-
-    cmp = numpy.zeros((len(hashvals), len(hashvals)), dtype=float)
-
-    for i in range(len(hashvals)):
-        hash_i = hashvals[i]
-        presence_i = hash_to_sample[hash_i]
-
-        for j in range(i):
-            hash_j = hashvals[j]
-            presence_j = hash_to_sample[hash_j]
-            jaccard = len(presence_i.intersection(presence_j)) / \
-                len(presence_i.union(presence_j))
-            cmp[i][j] = jaccard
-            cmp[j][i] = jaccard
-
-        cmp[i][i] = 1
+    # build similarity matrix
+    hashvals, cmp = presence_info.build_association_matrix()
 
     # turn into distance matrix
     dist = 1 - cmp
@@ -169,31 +151,7 @@ def main():
         print(f"running rectangular presence plot & saving to {args.output_presence_plot}")
 
         # make presence_mat!
-
-        # get list of samples:
-        all_samples = set()
-        for k, vv in presence_info.hash_to_sample.items():
-            all_samples.update(vv)
-
-        print(f"got {len(all_samples)} samples for presence plot.")
-
-        sample_to_idx = {}
-        for n, sample_name in enumerate(sorted(all_samples)):
-            sample_to_idx[sample_name] = n
-
-        hashval_to_idx = {}
-        for n, hashval in enumerate(presence_info.hash_to_sample):
-            hashval_to_idx[hashval] = n
-
-        print(f"creating presence matrix: {len(sample_to_idx)} x {len(hashval_to_idx)}")
-        presence_mat = numpy.zeros((len(sample_to_idx), len(hashval_to_idx)))
-
-        for hashval, sample_set in presence_info.hash_to_sample.items():
-            hashval_i = hashval_to_idx[hashval]
-            for sample_name in sample_set:
-                sample_j = sample_to_idx[sample_name]
-
-                presence_mat[sample_j][hashval_i] = 1
+        _, _, presence_mat = presence_info.build_presence_matrix()
 
         palette = sns.color_palette('deep', numpy.unique(labels).max() + 1)
         # make uncluster => white

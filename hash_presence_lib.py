@@ -3,6 +3,7 @@ Utilities for loading from & saving to files, as well as other common stuff.
 """
 import pickle
 import csv
+import numpy
 
 import sourmash
 
@@ -82,6 +83,58 @@ class HashPresenceInformation:
                                        moltype=self.moltype,
                                        classify_d=self.classify_d,
                                        hash_to_sample=new_d)
+
+    def build_association_matrix(self):
+        hash_to_sample = self.hash_to_sample
+
+        hashvals = list(sorted(hash_to_sample))
+        print(f"creating {len(hashvals)} by {len(hashvals)} array.")
+
+        cmp = numpy.zeros((len(hashvals), len(hashvals)), dtype=float)
+
+        for i in range(len(hashvals)):
+            hash_i = hashvals[i]
+            presence_i = hash_to_sample[hash_i]
+
+            for j in range(i):
+                hash_j = hashvals[j]
+                presence_j = hash_to_sample[hash_j]
+                jaccard = len(presence_i.intersection(presence_j)) / \
+                    len(presence_i.union(presence_j))
+                cmp[i][j] = jaccard
+                cmp[j][i] = jaccard
+
+            cmp[i][i] = 1
+
+        return hashvals, cmp
+
+    def build_presence_matrix(self):
+        # get list of samples:
+        all_samples = set()
+        for k, vv in self.hash_to_sample.items():
+            all_samples.update(vv)
+
+        print(f"got {len(all_samples)} samples for presence plot.")
+
+        sample_to_idx = {}
+        for n, sample_name in enumerate(sorted(all_samples)):
+            sample_to_idx[sample_name] = n
+
+        hashval_to_idx = {}
+        for n, hashval in enumerate(self.hash_to_sample):
+            hashval_to_idx[hashval] = n
+
+        print(f"creating presence matrix: {len(sample_to_idx)} x {len(hashval_to_idx)}")
+        presence_mat = numpy.zeros((len(sample_to_idx), len(hashval_to_idx)))
+
+        for hashval, sample_set in self.hash_to_sample.items():
+            hashval_i = hashval_to_idx[hashval]
+            for sample_name in sample_set:
+                sample_j = sample_to_idx[sample_name]
+
+                presence_mat[sample_j][hashval_i] = 1
+
+        return sample_to_idx, hashval_to_idx, presence_mat
         
     def save_to_file(self, filename):
         "Save an object of this class to a file."
