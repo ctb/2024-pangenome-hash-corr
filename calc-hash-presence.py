@@ -10,8 +10,10 @@ from collections import defaultdict
 import numpy
 import pickle
 
+import sourmash_utils
 from sourmash_plugin_pangenomics import NAMES
 from hash_presence_lib import HashPresenceInformation, read_ranktable_csv
+
 
 
 def main():
@@ -19,9 +21,8 @@ def main():
     p.add_argument('ranktable_csv')
     p.add_argument('metagenomes')
     p.add_argument('-o', '--output', required=True)
-    p.add_argument('-k', '--ksize', type=int, default=21)
-    p.add_argument('--scaled', type=int, default=100000)
     p.add_argument('--filter-samples', default=None)
+    sourmash_utils.add_standard_minhash_args(p)
     args = p.parse_args()
 
     classify_d = read_ranktable_csv(args.ranktable_csv)
@@ -29,8 +30,12 @@ def main():
 
     hash_to_sample = defaultdict(set)
 
-    idx = sourmash.load_file_as_index(args.metagenomes)
-    idx = idx.select(ksize=args.ksize, scaled=args.scaled)
+    select_mh = sourmash_utils.create_minhash_from_args(args)
+    print(f"selecting sketches: {select_mh}")
+
+    # Load the samples
+    print(f"loading sketches from file '{args.metagenomes}'")
+    idx = sourmash_utils.load_index_and_select(args.metagenomes, select_mh)
 
     print(f"found {len(idx)} metagenomes")
 
