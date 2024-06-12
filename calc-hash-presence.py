@@ -19,7 +19,7 @@ from hash_presence_lib import HashPresenceInformation, read_ranktable_csv
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('ranktable_csv')
-    p.add_argument('metagenomes')
+    p.add_argument('sketches')
     p.add_argument('-o', '--output', required=True)
     p.add_argument('--filter-samples', default=None)
     sourmash_utils.add_standard_minhash_args(p)
@@ -34,8 +34,8 @@ def main():
     print(f"selecting sketches: {select_mh}")
 
     # Load the samples
-    print(f"loading sketches from file '{args.metagenomes}'")
-    idx = sourmash_utils.load_index_and_select(args.metagenomes, select_mh)
+    print(f"loading sketches from file '{args.sketches}'")
+    idx = sourmash_utils.load_index_and_select(args.sketches, select_mh)
 
     print(f"found {len(idx)} metagenomes")
 
@@ -72,7 +72,7 @@ def main():
 
     presence_info = HashPresenceInformation(ksize=args.ksize,
                                             scaled=args.scaled,
-                                            moltype='DNA',
+                                            moltype=select_mh.moltype,
                                             classify_d=classify_d,
                                             hash_to_sample=hash_to_sample)
 
