@@ -42,7 +42,10 @@ def main():
     query_minhash = next(iter(idx.signatures())).minhash.copy_and_clear()
     for hashval in classify_d:
         query_minhash.add_hash(hashval)
-    query_minhash = query_minhash.downsample(scaled=args.scaled)
+    if args.scaled:
+        query_minhash = query_minhash.downsample(scaled=args.scaled)
+    else:
+        args.scaled = query_minhash.scaled
 
     hashes = list(sorted(set(query_minhash.hashes)))
     print(f"at downsampled scale={args.scaled}, {len(hashes)} hashes found.")
