@@ -69,7 +69,7 @@ def main():
 
         print(f"wrote {n_written} entries to '{args.output}'")
         print(f"use 'sourmash scripts clustermap1' from betterplot to plot!")
-        print(f"e.g. 'sourmash scripts clustermap1 {args.output} -o fig.png")
+        print(f"e.g. 'sourmash scripts clustermap1 {args.output} -o fig.png -u presence")
 
     if args.categories_csv:
         n_written = 0
